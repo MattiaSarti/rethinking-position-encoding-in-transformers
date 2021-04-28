@@ -372,7 +372,9 @@ class TransformerEncoder(FairseqEncoder):
             token_embedding = self.embed_tokens(src_tokens)
         x = embed = self.embed_scale * token_embedding
         if self.embed_positions is not None:
-            x = embed + self.embed_positions(src_tokens)
+############################ BEGINNING OF CHANGES ############################
+            x = embed  # x = embed + self.embed_positions(src_tokens)
+############################### END OF CHANGES ###############################
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)
         x = self.dropout_module(x)
@@ -773,7 +775,9 @@ class TransformerDecoder(FairseqIncrementalDecoder):
             x = self.project_in_dim(x)
 
         if positions is not None:
-            x += positions
+############################ BEGINNING OF CHANGES ############################
+            pass  # x += positions
+############################### END OF CHANGES ###############################
 
         if self.layernorm_embedding is not None:
             x = self.layernorm_embedding(x)
