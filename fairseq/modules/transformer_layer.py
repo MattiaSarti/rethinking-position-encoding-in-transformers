@@ -64,6 +64,9 @@ class TransformerEncoderLayer(nn.Module):
         )
 
         self.final_layer_norm = LayerNorm(self.embed_dim)
+############################ BEGINNING OF CHANGES ############################
+        self.position_encoder = PositionEncoder()
+############################### END OF CHANGES ###############################
 
     def build_fc1(self, input_dim, output_dim, q_noise, qn_block_size):
         return quant_noise(
@@ -125,6 +128,10 @@ class TransformerEncoderLayer(nn.Module):
         # will become -inf, which results in NaN in model parameters
         if attn_mask is not None:
             attn_mask = attn_mask.masked_fill(attn_mask.to(torch.bool), -1e8)
+
+############################ BEGINNING OF CHANGES ############################
+        x = self.position_encoder(x)
+############################### END OF CHANGES ###############################
 
         residual = x
         if self.normalize_before:
@@ -236,6 +243,9 @@ class TransformerDecoderLayer(nn.Module):
         self.need_attn = True
 
         self.onnx_trace = False
+############################ BEGINNING OF CHANGES ############################
+        self.position_encoder = PositionEncoder()
+############################### END OF CHANGES ###############################
 
     def build_fc1(self, input_dim, output_dim, q_noise, qn_block_size):
         return quant_noise(nn.Linear(input_dim, output_dim), q_noise, qn_block_size)
@@ -303,6 +313,10 @@ class TransformerDecoderLayer(nn.Module):
         """
         if need_head_weights:
             need_attn = True
+
+############################ BEGINNING OF CHANGES ############################
+        x = self.position_encoder(x)
+############################### END OF CHANGES ###############################
 
         residual = x
         if self.normalize_before:
@@ -421,3 +435,64 @@ def Linear(in_features, out_features, bias=True):
     if bias:
         nn.init.constant_(m.bias, 0.0)
     return m
+############################ BEGINNING OF CHANGES ############################
+
+
+class PositionEncoder(nn.Module):
+    """
+    Layer encoding position with the proposed alternative methodology.
+    """
+
+    def __init__(self, position_dim: int = 16, upper_bound_max_seq_len: int = 1024):
+        assert isinstance(position_dim, int)
+        super(PositionEncoder, self).__init__()
+        self.pool_input_dim = position_dim * 2
+        position_signals = PositionEncoder.generate_position_signals(
+            pos_dim=position_dim,
+            max_seq_len=upper_bound_max_seq_len
+        ).to(torch.float)  # TODO: check dtype
+        self.register_buffer('position_signals', position_signals)
+
+    @staticmethod
+    def generate_position_signals(pos_dim: int, max_seq_len: int) -> Tensor:
+        """
+        Generate position signals covering any possible sequence length,
+        to be furtherly selected and broadcasted, but so as to pre-compute
+        all possible values, avoiding such step during forward propagation.
+
+        Tensor Shapes:
+
+            Returned:
+                (seq_len, pos_dim)
+        """
+        pass
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Inject position by applying token-wise max-pooling to a subset of
+        features first and then concatenating the respective position signals to
+        each token feature vector, restoring the original feature dimension.
+
+        Tensor Shapes:
+
+            Args:
+                x: (seq_len, batch, embed_dim)
+
+            Returned:
+                (seq_len, batch, embed_dim)
+        """
+        seq_len, batch_size, _ = x.shape
+
+        position_features = self.position_signals[:seq_len,].detach()\
+            .unsqueeze(dim=1).repeat(1, batch_size, 1)
+
+        pooled_features = nn.functional.max_pool1d(
+            x[..., -POOL_INPUT_DIM:],
+            kernel_size=2
+        )
+
+        return torch.cat(
+            (x[..., :-POOL_INPUT_DIM], pooled_features, position_features),
+            dim=-1
+        )
+############################### END OF CHANGES ###############################
