@@ -132,7 +132,6 @@ class TransformerEncoderLayer(nn.Module):
 ############################ BEGINNING OF CHANGES ############################
         x = self.position_encoder(x)
 ############################### END OF CHANGES ###############################
-
         residual = x
         if self.normalize_before:
             x = self.self_attn_layer_norm(x)
@@ -317,7 +316,6 @@ class TransformerDecoderLayer(nn.Module):
 ############################ BEGINNING OF CHANGES ############################
         x = self.position_encoder(x)
 ############################### END OF CHANGES ###############################
-
         residual = x
         if self.normalize_before:
             x = self.self_attn_layer_norm(x)
@@ -450,7 +448,7 @@ class PositionEncoder(nn.Module):
         position_signals = PositionEncoder.generate_position_signals(
             pos_dim=position_dim,
             max_seq_len=upper_bound_max_seq_len
-        ).to(torch.float)  # TODO: check dtype
+        )
         self.register_buffer('position_signals', position_signals)
 
     @staticmethod
@@ -465,7 +463,22 @@ class PositionEncoder(nn.Module):
             Returned:
                 (seq_len, pos_dim)
         """
-        pass
+        from math import pi
+        data_type = torch.float  # TODO: check dtype
+        base_signal_abscissas = torch.arange(
+            start=0,
+            end=pi/2,
+            step=(pi/2)/max_seq_len,
+            dtype=data_type
+        )
+        relative_frequencies = torch.arange(
+            start=1,
+            end=pos_dim+1,
+            dtype=data_type
+        )
+        signals_abscissas = base_signal_abscissas.unsqueeze(dim=1)\
+            .repeat(1, pos_dim) * relative_frequencies
+        return torch.cos(signals_abscissas)
 
     def forward(self, x: Tensor) -> Tensor:
         """
