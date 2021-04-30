@@ -487,10 +487,13 @@ class PositionEncoder(nn.Module):
         )
 
         # computing the cosinusoidal position signals after modifying their
-        # abscissas to match the desired frequency distribution: 
+        # abscissas to match the desired frequency distribution, eventually
+        # shifting and scaling the cosinusoidal values so that they are
+        # linearly mapped from [-1; +1] to [0; 1] preserving the cosinusoidal
+        # trend: 
         signals_abscissas = base_signal_abscissas.unsqueeze(dim=1)\
             .repeat(1, pos_dim) * relative_frequencies
-        return torch.cos(signals_abscissas)
+        return (torch.cos(signals_abscissas) + 1) / 2
 
     def forward(self, x: Tensor) -> Tensor:
         """
