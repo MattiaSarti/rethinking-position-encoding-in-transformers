@@ -473,8 +473,8 @@ class PositionEncoder(nn.Module):
         # (i.e. the one with lowest frequency):
         base_signal_abscissas = torch.arange(
             start=0,
-            end=pi/2,
-            step=(pi/2)/max_seq_len,
+            end=pi,
+            step=pi/max_seq_len,
             dtype=data_type
         )
 
