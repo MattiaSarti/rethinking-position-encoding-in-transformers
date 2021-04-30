@@ -444,7 +444,10 @@ class PositionEncoder(nn.Module):
     def __init__(self, position_dim: int = 16, upper_bound_max_seq_len: int = 1024):
         assert isinstance(position_dim, int)
         super(PositionEncoder, self).__init__()
+
         self.pool_input_dim = position_dim * 2
+
+        # position signals injected as positional features:
         position_signals = PositionEncoder.generate_position_signals(
             pos_dim=position_dim,
             max_seq_len=upper_bound_max_seq_len
@@ -465,17 +468,26 @@ class PositionEncoder(nn.Module):
         """
         from math import pi
         data_type = torch.float  # TODO: check dtype
+
+        # generating the abscissas of the base cosinusoidal position signal
+        # (i.e. the one with lowest frequency):
         base_signal_abscissas = torch.arange(
             start=0,
-            end=pi/2,
-            step=(pi/2)/max_seq_len,
+            end=pi,
+            step=pi/max_seq_len,
             dtype=data_type
         )
+
+        # imposing the relative frequencies, compared to the base signal's
+        # one, of the resulting cosinusoidal positon signals:
         relative_frequencies = torch.arange(
             start=1,
             end=pos_dim+1,
             dtype=data_type
         )
+
+        # computing the cosinusoidal position signals after modifying their
+        # abscissas to match the desired frequency distribution: 
         signals_abscissas = base_signal_abscissas.unsqueeze(dim=1)\
             .repeat(1, pos_dim) * relative_frequencies
         return torch.cos(signals_abscissas)
@@ -496,16 +508,24 @@ class PositionEncoder(nn.Module):
         """
         seq_len, batch_size, _ = x.shape
 
+        # selecting the position signals for the tokens existing for such
+        # sequence length and broadcasting them for all the mini-batches:
         position_features = self.position_signals[:seq_len,].detach()\
             .unsqueeze(dim=1).repeat(1, batch_size, 1)
 
+        # pooling the subset of features to be halved in size so as to let the
+        # position features be concatenated without changing the overall token
+        # feature vector dimensionality:
         pooled_features = nn.functional.max_pool1d(
-            x[..., -POOL_INPUT_DIM:],
+            x[..., -self.pool_input_dim:],
             kernel_size=2
         )
 
+        # concatenating to the remaining features of the original feature
+        # vectors the pooled features and the position features, restoring the
+        # same original feature dimensionality:
         return torch.cat(
-            (x[..., :-POOL_INPUT_DIM], pooled_features, position_features),
+            (x[..., :-self.pool_input_dim], pooled_features, position_features),
             dim=-1
         )
 ############################### END OF CHANGES ###############################
