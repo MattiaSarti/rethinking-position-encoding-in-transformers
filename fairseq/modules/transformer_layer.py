@@ -467,7 +467,9 @@ class PositionEncoder(nn.Module):
                 (seq_len, pos_dim)
         """
         from math import pi
-        data_type = torch.float  # TODO: check dtype
+
+        data_type = torch.float
+        freq_interleaving_factor = 16
 
         # generating the abscissas of the base cosinusoidal position signal
         # (i.e. the one with lowest frequency):
@@ -482,7 +484,8 @@ class PositionEncoder(nn.Module):
         # one, of the resulting cosinusoidal positon signals:
         relative_frequencies = torch.arange(
             start=1,
-            end=pos_dim+1,
+            end=(pos_dim*freq_interleaving_factor)+1,
+            step=freq_interleaving_factor,
             dtype=data_type
         )
 
