@@ -296,6 +296,9 @@ class TransformerDecoderLayer(nn.Module):
         self_attn_padding_mask: Optional[torch.Tensor] = None,
         need_attn: bool = False,
         need_head_weights: bool = False,
+############################ BEGINNING OF CHANGES ############################
+        token_position: Optional[int] = None,
+############################### END OF CHANGES ###############################
     ):
         """
         Args:
@@ -314,7 +317,7 @@ class TransformerDecoderLayer(nn.Module):
             need_attn = True
 
 ############################ BEGINNING OF CHANGES ############################
-        x = self.position_encoder(x)
+        x = self.position_encoder(x, incremental_position=token_position)
 ############################### END OF CHANGES ###############################
         residual = x
         if self.normalize_before:
@@ -498,7 +501,11 @@ class PositionEncoder(nn.Module):
             .repeat(1, pos_dim) * relative_frequencies
         return (torch.cos(signals_abscissas) + 1) / 2
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(
+        self,
+        x: Tensor,
+        incremental_position: Optional[int] = None
+    ) -> Tensor:
         """
         Inject position by applying token-wise max-pooling to a subset of
         features first and then concatenating the respective position signals to
@@ -514,10 +521,19 @@ class PositionEncoder(nn.Module):
         """
         seq_len, batch_size, _ = x.shape
 
-        # selecting the position signals for the tokens existing for such
-        # sequence length and broadcasting them for all the mini-batches:
-        position_features = self.position_signals[:seq_len,].detach()\
-            .unsqueeze(dim=1).repeat(1, batch_size, 1)
+        # when predicting in mini-batches, with teacher forcing for decoding:
+        if incremental_position is None:
+            # selecting the position signals for the tokens existing for such
+            # sequence length and broadcasting them for all the mini-batches:
+            position_features = self.position_signals[:seq_len,].detach()\
+                .unsqueeze(dim=1).repeat(1, batch_size, 1)
+        # when predicting incrementally, at inference time, for decoding:
+        else:
+            # selecting the position signals for the tokens in that position
+            # and broadcasting them for all the mini-batches:
+            position_features = self.position_signals[incremental_position,]\
+                .detach().unsqueeze(dim=0).unsqueeze(dim=0)\
+                    .repeat(1, batch_size, 1)
 
         # pooling the subset of features to be halved in size so as to let the
         # position features be concatenated without changing the overall token
