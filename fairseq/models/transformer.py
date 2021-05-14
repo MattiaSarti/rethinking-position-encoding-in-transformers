@@ -766,7 +766,6 @@ class TransformerDecoder(FairseqIncrementalDecoder):
 ############################ BEGINNING OF CHANGES ############################
                 current_position = positions[1]
                 positions = positions[0][:, -1:]
-                # positions = positions[:, -1:]
 ############################### END OF CHANGES ###############################
 
         # embed tokens and positions

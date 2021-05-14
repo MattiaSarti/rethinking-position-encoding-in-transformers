@@ -85,11 +85,9 @@ class SinusoidalPositionalEmbedding(nn.Module):
                     .repeat(bsz, 1, 1)
                 )
 ############################ BEGINNING OF CHANGES ############################
-            raise NotImplementedError  # TODO: pos vs timestamp
-            raise NotImplementedError  # TODO: check self.onnx_trace != True
             return (
                 self.weights[self.padding_idx + pos, :].expand(bsz, 1, -1),
-                int(pos.item() - 1)  # position index returned as 0-based
+                int(pos.item()) - 1  # position index returned as 0-based
             )
 ############################### END OF CHANGES ###############################
 
@@ -105,8 +103,13 @@ class SinusoidalPositionalEmbedding(nn.Module):
                 flat_embeddings, embedding_shape
             )
             return embeddings
+############################ BEGINNING OF CHANGES ############################
         return (
-            self.weights.index_select(0, positions.view(-1))
-            .view(bsz, seq_len, -1)
-            .detach()
+            (
+                self.weights.index_select(0, positions.view(-1))
+                .view(bsz, seq_len, -1)
+                .detach()
+            ),
+            None
         )
+############################### END OF CHANGES ###############################
