@@ -550,4 +550,58 @@ class PositionEncoder(nn.Module):
             (x[..., :-self.pool_input_dim], pooled_features, position_features),
             dim=-1
         )
+
+
+if __name__ == '__main__':
+
+
+    from unittest import main as unittest_main, TestCase
+
+
+    POSITION_FEATURE_DIMENSION_FOR_TESTS = 16
+    MAX_SEQUENCE_LENGTH_FOR_TESTS = 1024
+
+
+    class TestPositionEncoder(TestCase):
+        """
+        Unit tests for the proposed "PositionEncoder" module.
+        """
+
+        @classmethod
+        def setUpClass(cls):
+            """
+            Common module instantiation to all tests, since it is not affected
+            by re-utilization.
+            """
+            cls.module = PositionEncoder(
+                position_dim=POSITION_FEATURE_DIMENSION_FOR_TESTS,
+                upper_bound_max_seq_len=MAX_SEQUENCE_LENGTH_FOR_TESTS
+            )
+
+        def test_no_learnable_parameters(self):
+            """
+            Test the module does not have any learnable parameter.
+            """
+            raise NotImplementedError
+
+        def test_output_dtype_and_shape(self):
+            """
+            Test the output tensor data type and shape.
+            """
+            raise NotImplementedError
+
+        def test_output_values(self):
+            """
+            Test the output tensor values.
+            """
+            raise NotImplementedError
+
+        def test_position_signals_generation(self):
+            """
+            Test the position signals' generation output.
+            """
+            raise NotImplementedError
+
+
+    unittest_main(verbosity=2)
 ############################### END OF CHANGES ###############################

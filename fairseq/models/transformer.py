@@ -804,7 +804,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
                 self_attn_mask = None
 
 ############################ BEGINNING OF CHANGES ############################
-            if incremental_state is None:  # TODO: check condition
+            if incremental_state is None:
                 x, layer_attn, _ = layer(
                     x,
                     encoder_out.encoder_out if encoder_out is not None else None,
