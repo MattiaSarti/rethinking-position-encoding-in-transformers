@@ -444,7 +444,11 @@ class PositionEncoder(nn.Module):
     Layer encoding position with the proposed alternative methodology.
     """
 
-    def __init__(self, position_dim: int = 16, upper_bound_max_seq_len: int = 1024):
+    def __init__(
+        self,
+        position_dim: int = 16,
+        upper_bound_max_seq_len: int = 1024
+    ):
         assert isinstance(position_dim, int)
         super(PositionEncoder, self).__init__()
 
@@ -475,7 +479,7 @@ class PositionEncoder(nn.Module):
         freq_interleaving_factor = 16
 
         # generating the abscissas of the base cosinusoidal position signal
-        # (i.e. the one with lowest frequency):
+        # (i.e. the one with lowest frequency), in radiants:
         base_signal_abscissas = torch.arange(
             start=0,
             end=pi,
@@ -495,10 +499,12 @@ class PositionEncoder(nn.Module):
         # computing the cosinusoidal position signals after modifying their
         # abscissas to match the desired frequency distribution, eventually
         # shifting and scaling the cosinusoidal values so that they are
-        # linearly mapped from [-1; +1] to [0; 1] preserving the cosinusoidal
-        # trend: 
-        signals_abscissas = base_signal_abscissas.unsqueeze(dim=1)\
-            .repeat(1, pos_dim) * relative_frequencies
+        # linearly mapped from [-1; +1] to [0; +1] preserving the cosinusoidal
+        # trend:
+        signals_abscissas = (
+            base_signal_abscissas.unsqueeze(dim=1).repeat(1, pos_dim)
+            * relative_frequencies
+        )
         return (torch.cos(signals_abscissas) + 1) / 2
 
     def forward(
@@ -508,8 +514,9 @@ class PositionEncoder(nn.Module):
     ) -> Tensor:
         """
         Inject position by applying token-wise max-pooling to a subset of
-        features first and then concatenating the respective position signals to
-        each token feature vector, restoring the original feature dimension.
+        features first and then concatenating the respective position signals
+        to each token feature vector, restoring the original feature
+        dimension.
 
         Tensor Shapes:
 
@@ -525,15 +532,18 @@ class PositionEncoder(nn.Module):
         if incremental_position is None:
             # selecting the position signals for the tokens existing for such
             # sequence length and broadcasting them for all the mini-batches:
-            position_features = self.position_signals[:seq_len,].detach()\
-                .unsqueeze(dim=1).repeat(1, batch_size, 1)
+            position_features = (
+                self.position_signals[:seq_len, ].detach().unsqueeze(dim=1)
+                .repeat(1, batch_size, 1)
+            )
         # when predicting incrementally, at inference time, for decoding:
         else:
             # selecting the position signals for the tokens in that position
             # and broadcasting them for all the mini-batches:
-            position_features = self.position_signals[incremental_position,]\
-                .detach().unsqueeze(dim=0).unsqueeze(dim=0)\
-                    .repeat(1, batch_size, 1)
+            position_features = (
+                self.position_signals[incremental_position, ].detach()
+                .unsqueeze(dim=0).unsqueeze(dim=0).repeat(1, batch_size, 1)
+            )
 
         # pooling the subset of features to be halved in size so as to let the
         # position features be concatenated without changing the overall token
@@ -547,22 +557,22 @@ class PositionEncoder(nn.Module):
         # vectors the pooled features and the position features, restoring the
         # same original feature dimensionality:
         return torch.cat(
-            (x[..., :-self.pool_input_dim], pooled_features, position_features),
+            (
+                x[..., :-self.pool_input_dim],
+                pooled_features,
+                position_features
+            ),
             dim=-1
         )
 
 
 if __name__ == '__main__':
 
-
+    from math import pi
     from unittest import main as unittest_main, TestCase
-
-    from torch import empty
-
 
     POSITION_FEATURE_DIMENSION_FOR_TESTS = 16
     MAX_SEQUENCE_LENGTH_FOR_TESTS = 1024
-
 
     class TestPositionEncoder(TestCase):
         """
@@ -579,6 +589,73 @@ if __name__ == '__main__':
                 position_dim=POSITION_FEATURE_DIMENSION_FOR_TESTS,
                 upper_bound_max_seq_len=MAX_SEQUENCE_LENGTH_FOR_TESTS
             )
+
+        def test_backpropagation(self):
+            """
+            Test that the module does not corrupt gradient backpropagation
+            from its outputs to its inputs when inserted in a (toy) network
+            (in-between two linear layers).
+            """
+            input_feature_dimension = 1024
+
+            class ToyNetwork(nn.Module):
+                """
+                Toy neural network, with the proposed layer in-between two
+                linear layers.
+                """
+
+                def __init__(self):
+                    super(ToyNetwork, self).__init__()
+                    self.first_linear_layer = nn.Linear(
+                        in_features=input_feature_dimension,
+                        out_features=128
+                    )
+                    self.last_linear_layer = nn.Linear(
+                        in_features=128,
+                        out_features=16
+                    )
+                    self.position_encoding_layer = PositionEncoder()
+                
+                def forward(self, x):
+                    x = self.first_linear_layer(x)
+                    x = self.position_encoding_layer(x)
+                    x = self.last_linear_layer(x)
+                    return x
+
+            toy_network = ToyNetwork()
+            optimizer = torch.optim.SGD(
+                params=toy_network.parameters(),
+                lr=1  # exaggeratedly high to avoid negligible updates
+            )
+
+            # taking a snapshot of the initial parameters:
+            initial_parameter_dict = dict(
+                toy_network.named_parameters()
+            )
+            # switching to training mode:
+            toy_network.train()
+            # forward propagation:
+            input_tensor = torch.empty(100, 40, input_feature_dimension)
+            output_tensor = toy_network(input_tensor)
+            toy_loss = output_tensor.sum()**2 - 1
+            # backward propagation:
+            toy_loss.backward()
+            # parameter update:
+            optimizer.step()
+            # taking a snapshot of the parameters now:
+            final_parameter_dict = dict(
+                toy_network.named_parameters()
+            )
+            # asserting that all parameters have been updated: 
+            for name, initial_parameter_tensor in (
+                initial_parameter_dict.items()
+            ):
+                self.assertFalse(
+                    torch.equal(
+                        initial_parameter_tensor,
+                        final_parameter_dict[name]
+                    )
+                )
 
         def test_no_possibly_learnable_parameters(self):
             """
@@ -638,7 +715,7 @@ if __name__ == '__main__':
                 test_name = "pos " + str(test_case['incremental_position']) +\
                     " & input " + str(test_case['input_tensor_kwargs'])
 
-                input_tensor = empty(**test_case['input_tensor_kwargs'])
+                input_tensor = torch.empty(**test_case['input_tensor_kwargs'])
                 output_tensor = self.module(
                     input_tensor,
                     incremental_position=test_case['incremental_position']
@@ -666,8 +743,86 @@ if __name__ == '__main__':
             """
             Test the position signals' generation output.
             """
-            raise NotImplementedError
+            freq_interleaving_factor = 16
+            expected_dtype = torch.float
 
+            test_cases_kwargs = [
+                {
+                    'pos_dim': 16,
+                    'max_seq_len': 1024
+                },
+                {
+                    'pos_dim': 4,
+                    'max_seq_len': 10
+                }
+            ]
+
+            for test_kwargs in test_cases_kwargs:
+
+                test_name = str(test_kwargs)
+
+                position_signals = PositionEncoder.generate_position_signals(
+                    **test_kwargs
+                )
+
+                with self.subTest("dtype for " + test_name):
+                    self.assertEqual(
+                        position_signals.dtype,
+                        expected_dtype
+                    )
+
+                with self.subTest("shape for " + test_name):
+                    self.assertEqual(
+                        position_signals.shape,
+                        (test_kwargs['max_seq_len'], test_kwargs['pos_dim'])
+                    )
+
+                with self.subTest("non-negative values for " + test_name):
+                    self.assertTrue(
+                        torch.all(position_signals >= 0)
+                    )
+
+                with self.subTest("no values above +1 for" + test_name):
+                    self.assertTrue(
+                        torch.all(position_signals <= 1)
+                    )
+
+                for i, actual_cosinusoidal_signal in (
+                    enumerate(position_signals.transpose(dim0=0, dim1=1))
+                ):
+                    subtest_name = (
+                        "cosinusoidal signal n. " + str(i + 1) + " for "
+                        + test_name
+                    )
+                    with self.subTest(subtest_name):
+                        expected_relative_frequency = (
+                            i*freq_interleaving_factor + 1
+                        )
+                        # cosinusoidal abscissas in radiants:
+                        abscissas = torch.arange(
+                            start=0,
+                            end=pi,
+                            step=pi/test_kwargs['max_seq_len'],
+                            dtype=expected_dtype
+                        )
+                        abscissas *= expected_relative_frequency
+                        # applying cosine:
+                        expected_cosinusoidal_signal = torch.cos(abscissas)
+                        # rescaling to [0; +1]:
+                        expected_cosinusoidal_signal = (
+                            (expected_cosinusoidal_signal + 1) / 2
+                        )
+                        # cosinusoidal signal assertion:
+                        self.assertTrue(
+                            torch.all(
+                                torch.eq(
+                                    actual_cosinusoidal_signal,
+                                    expected_cosinusoidal_signal
+                                )
+                            )
+                        )
+                # redundant assertion to ensure this test is properly written:
+                assert i + 1 == test_kwargs['pos_dim']
 
     unittest_main(verbosity=2)
 ############################### END OF CHANGES ###############################
