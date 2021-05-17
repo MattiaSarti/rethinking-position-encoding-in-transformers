@@ -557,6 +557,8 @@ if __name__ == '__main__':
 
     from unittest import main as unittest_main, TestCase
 
+    from torch import empty
+
 
     POSITION_FEATURE_DIMENSION_FOR_TESTS = 16
     MAX_SEQUENCE_LENGTH_FOR_TESTS = 1024
@@ -578,17 +580,81 @@ if __name__ == '__main__':
                 upper_bound_max_seq_len=MAX_SEQUENCE_LENGTH_FOR_TESTS
             )
 
-        def test_no_learnable_parameters(self):
+        def test_no_possibly_learnable_parameters(self):
             """
-            Test the module does not have any learnable parameter.
+            Test that the module does not have any parameter that can become
+            learnable.
             """
-            raise NotImplementedError
+            possibly_learnable_parameters = list(self.module.parameters())
+            self.assertEqual(possibly_learnable_parameters, [])
 
         def test_output_dtype_and_shape(self):
             """
             Test the output tensor data type and shape.
             """
-            raise NotImplementedError
+            expected_output_dtype = torch.float
+
+            test_cases = [
+                {
+                    'incremental_position': None,
+                    'input_tensor_kwargs': {
+                        'dtype': torch.float,
+                        'size': (19, 104, 512)
+                    },
+                    'expected_output_dtype': expected_output_dtype,
+                    'expected_output_shape': (19, 104, 512)
+                },
+                {
+                    'incremental_position': 4,
+                    'input_tensor_kwargs': {
+                        'dtype': torch.float,
+                        'size': (1, 512, 512)
+                    },
+                    'expected_output_dtype': expected_output_dtype,
+                    'expected_output_shape': (1, 512, 512)
+                },
+                {
+                    'incremental_position': None,
+                    'input_tensor_kwargs': {
+                        'dtype': torch.float,
+                        'size': (23, 40, 256)
+                    },
+                    'expected_output_dtype': expected_output_dtype,
+                    'expected_output_shape': (23, 40, 256)
+                },
+                {
+                    'incremental_position': 137,
+                    'input_tensor_kwargs': {
+                        'dtype': torch.float,
+                        'size': (1, 8, 256)
+                    },
+                    'expected_output_dtype': expected_output_dtype,
+                    'expected_output_shape': (1, 8, 256)
+                },
+            ]
+
+            for test_case in test_cases:
+
+                test_name = "pos " + str(test_case['incremental_position']) +\
+                    " & input " + str(test_case['input_tensor_kwargs'])
+
+                input_tensor = empty(**test_case['input_tensor_kwargs'])
+                output_tensor = self.module(
+                    input_tensor,
+                    incremental_position=test_case['incremental_position']
+                )
+
+                with self.subTest("dtype for " + test_name):
+                    self.assertEqual(
+                        output_tensor.dtype,
+                        test_case['expected_output_dtype']
+                    )
+
+                with self.subTest("shape for " + test_name):
+                    self.assertEqual(
+                        output_tensor.shape,
+                        test_case['expected_output_shape']
+                    )
 
         def test_output_values(self):
             """
