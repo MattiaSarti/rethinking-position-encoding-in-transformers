@@ -1,3 +1,4 @@
+############################ BEGINNING OF CHANGES ############################
 """
 Unit tests for the proposed "PositionEncoder" module.
 """
@@ -5,19 +6,47 @@ Unit tests for the proposed "PositionEncoder" module.
 
 from copy import deepcopy
 from math import pi
+from random import seed as random_seed
 from unittest import main as unittest_main, TestCase
 
+from numpy.random import seed as numpy_seed
 import torch
 from torch import nn
+from torch.nn import functional as F
 
 from transformer_layer import PositionEncoder
 
 
-POSITION_FEATURE_DIMENSION_FOR_TESTS = 16
-MAX_SEQUENCE_LENGTH_FOR_TESTS = 1024
+DEFAULT_POSITION_FEATURE_DIMENSION_FOR_TESTS = 16
+DEFAULT_MAX_SEQUENCE_LENGTH_FOR_TESTS = 1024
 
 
-class TestPositionEncoder(TestCase):
+def make_results_reproducible() -> None:
+    """
+    Make the subsequent instructions produce purely deterministic outputs
+    by fixing all the relevant seeds.
+    """
+    random_seed(0)
+    _ = numpy_seed(0)
+    _ = torch.manual_seed(0)
+
+
+class ReproducibleTest:
+    """
+    Common setup for reproducible tests.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def setUp(self):
+        """
+        Setup executed before every method (test) for reproducible results.
+        """
+        make_results_reproducible()
+
+
+class TestPositionEncoder(ReproducibleTest, TestCase):
     """
     Unit tests for the proposed "PositionEncoder" module.
     """
@@ -29,8 +58,8 @@ class TestPositionEncoder(TestCase):
         by re-utilization.
         """
         cls.module = PositionEncoder(
-            position_dim=POSITION_FEATURE_DIMENSION_FOR_TESTS,
-            upper_bound_max_seq_len=MAX_SEQUENCE_LENGTH_FOR_TESTS
+            position_dim=DEFAULT_POSITION_FEATURE_DIMENSION_FOR_TESTS,
+            upper_bound_max_seq_len=DEFAULT_MAX_SEQUENCE_LENGTH_FOR_TESTS
         )
 
     def test_backpropagation(self):
@@ -87,10 +116,8 @@ class TestPositionEncoder(TestCase):
         toy_loss.backward()
         # parameter update:
         optimizer.step()
-        # taking a snapshot of the parameters now:
-        final_parameter_dict = dict(
-            toy_network.named_parameters()
-        )
+        # considering parameters now:
+        final_parameter_dict = dict(toy_network.named_parameters())
         # asserting that all parameters have been updated:
         for name, initial_parameter_tensor in (
             initial_parameter_dict.items()
@@ -162,7 +189,7 @@ class TestPositionEncoder(TestCase):
 
             input_tensor = torch.empty(**test_case['input_tensor_kwargs'])
             output_tensor = self.module(
-                input_tensor,
+                x=input_tensor,
                 incremental_position=test_case['incremental_position']
             )
 
@@ -182,7 +209,104 @@ class TestPositionEncoder(TestCase):
         """
         Test the output tensor values.
         """
-        raise NotImplementedError
+        dtype = torch.float
+
+        test_cases = [
+            {
+                'input': torch.rand(
+                    size=(128, 40, 512),
+                    dtype=dtype
+                ),
+                'pos_dim': 16,
+                'max_seq_len': 1024,
+                'incremental_position': None
+            },
+            {
+                'input': torch.rand(
+                    size=(1, 40, 512),
+                    dtype=dtype
+                ),
+                'pos_dim': 16,
+                'max_seq_len': 1024,
+                'incremental_position': 3
+            },
+            {
+                'input': torch.rand(
+                    size=(6, 40, 1024),
+                    dtype=dtype
+                ),
+                'pos_dim': 128,
+                'max_seq_len': 12,
+                'incremental_position': None
+            },
+            {
+                'input': torch.rand(
+                    size=(1, 40, 1024),
+                    dtype=dtype
+                ),
+                'pos_dim': 128,
+                'max_seq_len': 12,
+                'incremental_position': 4
+            },
+        ]
+
+        for i, test in enumerate(test_cases, start=1):
+
+            seq_len, batch_size, _ = test['input'].shape
+
+            module = PositionEncoder(
+                position_dim=test['pos_dim'],
+                upper_bound_max_seq_len=test['max_seq_len']
+            )
+            output = module(
+                x=test['input'],
+                incremental_position=test['incremental_position']
+            )
+
+            with self.subTest("unpooled features for test n. " + str(i)):
+                self.assertTrue(
+                    torch.equal(
+                        output[..., :-module.pool_input_dim],
+                        test['input'][..., :-module.pool_input_dim]
+                    )
+                )
+
+            with self.subTest("max-pooled features for test n. " + str(i)):
+                self.assertTrue(
+                    torch.equal(
+                        output[..., -module.pool_input_dim:-test['pos_dim']],
+                        F.max_pool1d(
+                            test['input'][..., -module.pool_input_dim:],
+                            kernel_size=2
+                        )
+                    )
+                )
+
+            if test['incremental_position'] is None:
+                with self.subTest("position features for test n. " + str(i)):
+                    self.assertTrue(
+                        torch.equal(
+                            output[..., -test['pos_dim']:],
+                            (
+                                module.position_signals[:seq_len, ]
+                                .unsqueeze(dim=1).repeat(1, batch_size, 1)
+                            )
+                        )
+                    )
+            else:
+                with self.subTest("position features for test n. " + str(i)):
+                    self.assertTrue(
+                        torch.equal(
+                            output[..., -test['pos_dim']:],
+                            (
+                                module.position_signals[
+                                    test['incremental_position'],
+                                ]
+                                .unsqueeze(dim=0).unsqueeze(dim=0)
+                                .repeat(1, batch_size, 1)
+                            )
+                        )
+                    )
 
     def test_position_signals_generation(self):
         """
@@ -273,3 +397,4 @@ class TestPositionEncoder(TestCase):
 if __name__ == '__main__':
 
     unittest_main(verbosity=2)
+############################### END OF CHANGES ###############################
