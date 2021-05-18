@@ -12,9 +12,9 @@ Why? Because I believed that summing position signals to feature vectors represe
 
 ## Architecture Differences
 
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/pictures/flowers.jpg?raw=true)
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/pictures/flowers.jpg?raw=true)
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/pictures/flowers.jpg?raw=true)
+![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/encoders.png?raw=true)
+![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/decoders.png?raw=true)
+![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/flowers.jpg?raw=true)
 
 ## Results on WMT'16 En-De [BLEU*]
 
