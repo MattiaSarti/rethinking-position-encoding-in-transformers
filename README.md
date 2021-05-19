@@ -13,13 +13,13 @@ Why? Because I believed that summing position signals to feature vectors represe
 ## Architecture Differences
 
 ### Encoder:
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/encoders_comparison.png?raw=true)
+![...loading...](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/blob/feature/rethinking-position-encoding/readme_pictures/encoders_comparison.png?raw=true)
 
 ### Decoder:
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/decoders_comparison.png?raw=true)
+![...loading...](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/blob/feature/rethinking-position-encoding/readme_pictures/decoders_comparison.png?raw=true)
 
 ### Position Encoding:
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/position_encoding_comparison.png?raw=true)
+![...loading...](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/blob/feature/rethinking-position-encoding/readme_pictures/position_encoding_comparison.png?raw=true)
 
 ## Results on WMT'16 En-De [BLEU*]
 
