@@ -19,7 +19,7 @@ Why? Because I believed that summing position signals to feature vectors represe
 ![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/decoders_comparison.png?raw=true)
 
 ### Position Encoding:
-![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/position_encoding_comparison.jpg?raw=true)
+![alt text](https://github.com/MattiaSarti/temp-README/blob/main/readme_pictures/position_encoding_comparison.png?raw=true)
 
 ## Results on WMT'16 En-De [BLEU*]
 
