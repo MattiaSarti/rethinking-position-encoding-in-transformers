@@ -32,16 +32,20 @@ Why? Because I believed that summing position signals to feature vectors represe
 
 ## How To Reproduce Such Result Comparison
 
-The dataset was downloaded and preprocessed as suggested in Fairseq [here](https://github.com/pytorch/fairseq/blob/master/examples/scaling_nmt/README.md).
+The dataset was downloaded and preprocessed as suggested in Fairseq [here](https://github.com/pytorch/fairseq/blob/master/examples/scaling_nmt/README.md), coherently with the [original work](https://arxiv.org/abs/1706.03762).
 
-Training was always executed by running this command:
+Training was always executed by running this command until 100000 training steps were reached, coherently with the [original base model training](https://arxiv.org/abs/1706.03762):
 ```
-Lorem Ipsum
+fairseq-train <your_dataset_directory> --arch transformer_wmt_en_de --share-all-embeddings --optimizer adam --adam-betas "(0.9, 0.98)" --clip-norm 0.0 --lr-scheduler inverse_sqrt --warmup-init-lr 1e-07 --warmup-updates 4000 --lr 0.0007 --min-lr 1e-09 --criterion label_smoothed_cross_entropy --label-smoothing 0.1 --weight-decay 0.0 --max-tokens 2048 --update-freq 16 --no-progress-bar --log-format json --log-interval 50 --save-interval-updates 1000 --keep-interval-updates 10 --tensorboard-logdir <your_tensorboard_directory>
 ```
 
-Evaluation was always carried out by running this command:
+Evaluation was always carried out, coherently with the [original work](https://arxiv.org/abs/1706.03762), by first averaging the last 5 checkpoints thanks to [this script](https://github.com/pytorch/fairseq/blob/master/scripts/average_checkpoints.py):
 ```
-Lorem Ipsum
+python average_checkpoints.py --inputs <your_checkpoints_directory> --num-update-checkpoints 5 --output <your_averaged_checkpoint_path>
+```
+and by evantually running this command:
+```
+fairseq-generate <your_dataset_directory> --path <your_averaged_checkpoint_path> --gen-subset test --beam 4 --batch-size 128 --remove-bpe --lenpen 0.6 > <your_output_text_file_path>
 ```
 
 Assuming your local has a single GeForce GTX 1060 NVIDIA GPU whose software dependencies for interfacing with by PyTorch are already installed:
@@ -57,5 +61,5 @@ The proposed architecture variant includes an additional module whose implementa
 The script **fairseq/modules/position_encoder_unit_tests.py** contains such unit tests.\
 To run them, after installing Faiseq and modifying its source code as explained above, execute in the root directory of the package this command:
 ```
-Lorem Ipsum
+python modules/position_encoder_unit_tests.py
 ```
