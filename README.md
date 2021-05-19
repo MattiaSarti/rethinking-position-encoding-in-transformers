@@ -48,7 +48,7 @@ and by evantually running this command:
 fairseq-generate <your_dataset_directory> --path <your_averaged_checkpoint_path> --gen-subset test --beam 4 --batch-size 128 --remove-bpe --lenpen 0.6 > <your_output_text_file_path>
 ```
 
-Assuming your local has a single GeForce GTX 1060 NVIDIA GPU whose software dependencies for interfacing with by PyTorch are already installed:
+Assuming your local has a single GeForce GTX 1060 NVIDIA GPU whose software dependencies for interfacing with PyTorch are already installed:
 1. first, install Fairseq 0.10.0 via pip;
 2. next, download and preprocess the dataset as above;
 3. then, train and evaluate the original Transformer as implemented by fairseq by running the above-mentioned commands;
@@ -63,3 +63,8 @@ To run them, after installing Faiseq and modifying its source code as explained 
 ```
 python modules/position_encoder_unit_tests.py
 ```
+Also, the code style of the added parts is both Pylint- and Flake8-compliant.
+
+## My Attitude
+
+I first learned about Transformers by implementing and training one myself from scratch: check [this](https://github.com/MattiaSarti/transformer-from-scratch) out!
