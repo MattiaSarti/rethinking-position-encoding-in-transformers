@@ -51,7 +51,7 @@ fairseq-generate <your_dataset_directory> --path <your_averaged_checkpoint_path>
 Assuming your local has a single GeForce GTX 1060 NVIDIA GPU whose software dependencies for interfacing with PyTorch are already installed:
 1. first, install Fairseq 0.10.0 via pip;
 2. next, download and preprocess the dataset as above;
-3. then, train and evaluate the original Transformer as implemented by fairseq by running the above-mentioned commands;
+3. then, train and evaluate the original Transformer as implemented in Fairseq by running the above-mentioned commands;
 4. afterwards, modify the source code of the Fairseq library installed on your local by directly replacing the whole directory **fairseq**, wherever installed by pip, with the directory **fairseq** on the branch **feature/rethinking-position-encoding**;
 5. finally, train and evaluate the proposed Transformer variant by running the above-mentioned commands.
 
