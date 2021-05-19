@@ -3,6 +3,9 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+############################ BEGINNING OF CHANGES ############################
+from math import pi
+############################### END OF CHANGES ###############################
 from typing import Dict, List, Optional
 
 import torch
@@ -445,9 +448,9 @@ class PositionEncoder(nn.Module):
     """
 
     def __init__(
-        self,
-        position_dim: int = 16,
-        upper_bound_max_seq_len: int = 1024
+            self,
+            position_dim: int = 16,
+            upper_bound_max_seq_len: int = 1024
     ):
         assert isinstance(position_dim, int)
         super(PositionEncoder, self).__init__()
@@ -473,8 +476,6 @@ class PositionEncoder(nn.Module):
             Returned:
                 (seq_len, pos_dim)
         """
-        from math import pi
-
         data_type = torch.float
         freq_interleaving_factor = 16
 
@@ -507,10 +508,10 @@ class PositionEncoder(nn.Module):
         )
         return (torch.cos(signals_abscissas) + 1) / 2
 
-    def forward(
-        self,
-        x: Tensor,
-        incremental_position: Optional[int] = None
+    def forward(  # pylint: disable=C0103
+            self,
+            x: Tensor,
+            incremental_position: Optional[int] = None
     ) -> Tensor:
         """
         Inject position by applying token-wise max-pooling to a subset of

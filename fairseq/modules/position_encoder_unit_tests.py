@@ -31,15 +31,15 @@ def make_results_reproducible() -> None:
     _ = torch.manual_seed(0)
 
 
-class ReproducibleTest:
+class ReproducibleTest:  # pylint: disable=R0903
     """
     Common setup for reproducible tests.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # pylint: disable=W0235
         super().__init__(*args, **kwargs)
 
-    def setUp(self):
+    def setUp(self):  # pylint: disable=R0201,C0103
         """
         Setup executed before every method (test) for reproducible results.
         """
@@ -88,7 +88,10 @@ class TestPositionEncoder(ReproducibleTest, TestCase):
                 )
                 self.position_encoding_layer = PositionEncoder()
 
-            def forward(self, x):
+            def forward(self, x):  # pylint: disable=C0103
+                """
+                Forward propagation.
+                """
                 x = self.first_linear_layer(x)
                 x = self.position_encoding_layer(x)
                 x = self.last_linear_layer(x)
@@ -120,7 +123,7 @@ class TestPositionEncoder(ReproducibleTest, TestCase):
         final_parameter_dict = dict(toy_network.named_parameters())
         # asserting that all parameters have been updated:
         for name, initial_parameter_tensor in (
-            initial_parameter_dict.items()
+                initial_parameter_dict.items()
         ):
             self.assertFalse(
                 torch.equal(
@@ -357,7 +360,7 @@ class TestPositionEncoder(ReproducibleTest, TestCase):
                 )
 
             for i, actual_cosinusoidal_signal in (
-                enumerate(position_signals.transpose(dim0=0, dim1=1))
+                    enumerate(position_signals.transpose(dim0=0, dim1=1))
             ):
                 subtest_name = (
                     "cosinusoidal signal n. " + str(i + 1) + " for "
@@ -390,8 +393,6 @@ class TestPositionEncoder(ReproducibleTest, TestCase):
                             )
                         )
                     )
-            # redundant assertion to ensure this test is properly written:
-            assert i + 1 == test_kwargs['pos_dim']
 
 
 if __name__ == '__main__':
