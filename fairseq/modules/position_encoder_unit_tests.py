@@ -36,9 +36,6 @@ class ReproducibleTest:  # pylint: disable=R0903
     Common setup for reproducible tests.
     """
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=W0235
-        super().__init__(*args, **kwargs)
-
     def setUp(self):  # pylint: disable=R0201,C0103
         """
         Setup executed before every method (test) for reproducible results.
