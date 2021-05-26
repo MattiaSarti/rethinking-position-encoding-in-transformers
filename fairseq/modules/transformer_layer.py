@@ -508,7 +508,7 @@ class PositionEncoder(nn.Module):
         )
         return (torch.cos(signals_abscissas) + 1) / 2
 
-    def forward(  # pylint: disable=C0103
+    def forward(  # pylint: disable=invalid-name
             self,
             x: Tensor,
             incremental_position: Optional[int] = None

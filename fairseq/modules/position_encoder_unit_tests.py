@@ -31,12 +31,12 @@ def make_results_reproducible() -> None:
     _ = torch.manual_seed(0)
 
 
-class ReproducibleTest:  # pylint: disable=R0903
+class ReproducibleTest:  # pylint: disable=too-few-public-methods
     """
     Common setup for reproducible tests.
     """
 
-    def setUp(self):  # pylint: disable=R0201,C0103
+    def setUp(self):  # pylint: disable=no-self-use,invalid-name
         """
         Setup executed before every method (test) for reproducible results.
         """
@@ -85,7 +85,7 @@ class TestPositionEncoder(ReproducibleTest, TestCase):
                 )
                 self.position_encoding_layer = PositionEncoder()
 
-            def forward(self, x):  # pylint: disable=C0103
+            def forward(self, x):  # pylint: disable=invalid-name
                 """
                 Forward propagation.
                 """
