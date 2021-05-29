@@ -64,10 +64,7 @@ Assuming your local has a single GeForce GTX 1060 NVIDIA GPU whose software depe
 
 The proposed architecture variant includes an additional module whose implementation has been extensively tested.\
 The script [**fairseq/modules/position_encoder_unit_tests.py**](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/blob/feature/rethinking-position-encoding/fairseq/modules/position_encoder_unit_tests.py) contains such unit tests.\
-To run them, after installing Faiseq and modifying its source code as explained above, execute in the root directory of the package this command:
-```
-python modules/position_encoder_unit_tests.py
-```
+To run them, after installing Faiseq and modifying its source code as explained above, execute the command ```python modules/position_encoder_unit_tests.py``` in the root directory of the package.\
 Also, the code style of the added parts is both Pylint- and Flake8-compliant, as of respective 2.5.3 and 3.8.4 versions.
 
 ## My Attitude
