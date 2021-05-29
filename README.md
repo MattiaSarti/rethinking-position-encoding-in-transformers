@@ -10,6 +10,11 @@ The proposed model variant implementation is on the branch [**feature/rethinking
 
 Why? Because I believed that summing position signals to feature vectors representing token embeddings does not attribute consistent meaning to such features. Instead, without introducing additional parameters and breaking the advantages of Transformers, I thought that position features could be concatenated to each layer block's input feature vectors, so as to make position information available to the attention mechanism and separate from other features.
 
+## Related Work
+
+[Liu et al.](https://arxiv.org/abs/2003.09229) and, previously, [Shaw et al.](https://arxiv.org/abs/1803.02155) were moved by similar concerns about position encoding in the original Transformer.\
+Differently from these approaches, the proposed one 1) does not re-design the attention mechanism, 2) does not require additional learnable parameters and 3) introduces minimal computational overhead, yet preserving the benefits of the original architecture.
+
 ## Architecture Differences
 
 ### Encoder:
@@ -29,11 +34,6 @@ Why? Because I believed that summing position signals to feature vectors represe
 
 \* *BLEU score computed as in the [original paper](https://arxiv.org/abs/1706.03762) but without compound splitting*\
 \*\* *"base" models compared, according to the [original terminology](https://arxiv.org/abs/1706.03762)*
-
-## Related Work
-
-[Liu et al.](https://arxiv.org/abs/2003.09229) and, previously, [Shaw et al.](https://arxiv.org/abs/1803.02155) were moved by similar concerns about position encoding in the original Transformer.\
-Differently from these approaches, the proposed one 1) does not re-design the attention mechanism, 2) does not require additional learnable parameters and 3) introduces minimal computational overhead, yet preserving the benefits of the original architecture.
 
 ## How To Reproduce Such Result Comparison
 
