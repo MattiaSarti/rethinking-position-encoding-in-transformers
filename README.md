@@ -30,15 +30,15 @@ Differently from these approaches, the proposed one 1) does not re-design the at
 
 | Original Transformer**   | Proposed Transformer**   |
 |:------------------------:|:------------------------:|
-| 26.61                    | YY.YY                    |
+| 26.61                    | 24.85                    |
 
 \* *BLEU score computed as in the [original paper](https://arxiv.org/abs/1706.03762) but without compound splitting*\
 \*\* *"base" models compared, according to the [original terminology](https://arxiv.org/abs/1706.03762)*
 
 ## Discussion
 
-The proposed position encoding mechanism does not lead to a significant BLEU improvement, probably because of 1) the relatively relevant number of token features sacrified to inject position information, which are no longer available as additional representation dimensions, and 2) the scarse influence of position information on Transformers' performances, as proven by former literature.\
-Further experients would be necessary to infer robust conclusions, both on additional datasets (as WMT'16 En-Fr) and with different percentages of token features allocated to position representation, but it was not possible to further experiment due to hardware costs.
+The proposed position encoding mechanism does not lead to a BLEU improvement, probably because of 1) the relatively relevant number of token features sacrified to inject position information, which are no longer available as additional representation dimensions, and 2) the scarse influence of position information on Transformers' performances, as proven by former literature.\
+Further experients would be necessary to infer robust conclusions, both on additional datasets (as WMT'16 En-Fr) and with different lower percentages of token features allocated to position representation, but it was not possible to further investigate due to hardware costs.
 
 ## How To Reproduce Such Result Comparison
 
