@@ -15,7 +15,7 @@ Why? Because I believed that summing position signals to feature vectors represe
 [Liu et al.](https://arxiv.org/abs/2003.09229) and, previously, [Shaw et al.](https://arxiv.org/abs/1803.02155) were moved by similar concerns about position encoding in the original Transformer.\
 Differently from these approaches, the proposed one 1) does not re-design the attention mechanism, 2) does not require additional learnable parameters and 3) introduces minimal computational overhead, yet preserving the benefits of the original architecture.
 
-## Architecture Differences
+## Proposed Architectural Modifications
 
 ### Encoder:
 ![...loading...](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/blob/feature/rethinking-position-encoding/readme_pictures/encoders_comparison.png?raw=true)
@@ -34,6 +34,11 @@ Differently from these approaches, the proposed one 1) does not re-design the at
 
 \* *BLEU score computed as in the [original paper](https://arxiv.org/abs/1706.03762) but without compound splitting*\
 \*\* *"base" models compared, according to the [original terminology](https://arxiv.org/abs/1706.03762)*
+
+## Discussion
+
+The proposed position encoding mechanism does not lead to a significant BLEU improvement, probably because of 1) the relatively relevant number of token features sacrified to inject position information, which are no longer available as additional representation dimensions, and 2) the scarse influence of position information on Transformers' performances, as proven by former literature.\
+Further experients would be necessary to infer robust conclusions, both on additional datasets (as WMT'16 En-Fr) and with different percentages of token features allocated to position representation, but it was not possible to further experiment due to hardware costs.
 
 ## How To Reproduce Such Result Comparison
 
