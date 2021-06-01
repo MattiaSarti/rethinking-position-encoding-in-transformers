@@ -4,7 +4,7 @@ The proposed Transformer variant was implemented by modifying position encoding 
 
 The original Fairseq implementation is on the branch [**original-implementation**](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/tree/original-implementation).\
 The proposed model variant implementation is on the branch [**feature/rethinking-position-encoding**](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers).\
-[Compare the two branches](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/compare/original-implementation...feature/rethinking-position-encoding) to see the introduced changes.
+[Compare the two branches](https://github.com/MattiaSarti/rethinking-position-encoding-in-transformers/compare/original-implementation...rethinking-position-encoding/16-position-features) to see the introduced changes.
 
 ## Rationale
 
