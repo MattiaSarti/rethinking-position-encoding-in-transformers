@@ -103,13 +103,13 @@ class SinusoidalPositionalEmbedding(nn.Module):
                 flat_embeddings, embedding_shape
             )
             return embeddings
-############################ BEGINNING OF CHANGES ############################
         return (
+############################ BEGINNING OF CHANGES ############################
             (
                 self.weights.index_select(0, positions.view(-1))
                 .view(bsz, seq_len, -1)
                 .detach()
             ),
             None
-        )
 ############################### END OF CHANGES ###############################
+        )
