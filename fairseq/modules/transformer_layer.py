@@ -449,7 +449,7 @@ class PositionEncoder(nn.Module):
 
     def __init__(
             self,
-            position_dim: int = 16,
+            position_dim: int = 4,
             upper_bound_max_seq_len: int = 1024
     ):
         assert isinstance(position_dim, int)
