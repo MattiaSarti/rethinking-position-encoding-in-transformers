@@ -477,7 +477,9 @@ class PositionEncoder(nn.Module):
                 (seq_len, pos_dim)
         """
         data_type = torch.float
-        freq_interleaving_factor = 16
+        # defining an interleaving factor so that frequencies always reach the
+        # same final frequency from the same initial frequency:
+        freq_interleaving_factor = 16 * (16 // pos_dim)
 
         # generating the abscissas of the base cosinusoidal position signal
         # (i.e. the one with lowest frequency), in radiants:
